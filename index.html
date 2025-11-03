@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de recomendación de libros</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" rel="stylesheet" />
+    <style>
+        /* Estilos generales */
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Estilos de Choices.js */
+        .choices__inner { min-height: 50px; border-radius: 0.5rem; border-color: #d1d5db; background-color: white; }
+        .choices__list--dropdown .choices__item--selectable::after { content: "+\20"; font-size: 1.5rem; line-height: 1; margin-right: 0.5rem; color: #4f46e5; }
+        .choices__button { border-left: 1px solid #e5e7eb; padding-left: 0.5rem; margin-left: 0.5rem; }
+        .message-box { transition: opacity 0.3s ease-in-out; }
+
+        /* Estilos para Radio Buttons personalizados */
+        .radio-group input[type="radio"] { display: none; }
+        .radio-group label {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            margin: 0.25rem;
+            border-radius: 9999px;
+            border: 2px solid #e5e7eb;
+            cursor: pointer;
+            transition: all 0.1s ease-in-out;
+            font-weight: 500;
+            color: #4b5563;
+        }
+        .radio-group input[type="radio"]:checked + label {
+            background-color: #4f46e5;
+            border-color: #4f46e5;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .radio-group label:hover {
+            border-color: #a5b4fc;
+        }
+
+        /* Estilos para validación de input */
+        .input-valid {
+            border-color: #22c55e;
+            box-shadow: 0 0 0 2px #bbf7d0;
+        }
+        .input-invalid {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 2px #fecaca;
+        }
+
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-4 sm:p-8">
+    
+    <div id="privacy-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 space-y-4">
+            <h3 class="text-2xl font-bold text-gray-900">AVISO DE PRIVACIDAD</h3>
+            <div class="text-sm text-gray-600 space-y-3">
+                <p>
+                    De conformidad con lo establecido en la **Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP)**, le informamos que los datos personales recabados a través de este formulario serán tratados con estricta confidencialidad.
+                </p>
+                <p>
+                    El tratamiento de sus datos personales se fundamenta en los principios de **Licitud, Consentimiento, Información, Calidad, Finalidad, Lealtad, Proporcionalidad y Responsabilidad**, consagrados en el Artículo dos del Capítulo I y el Artículo 5 del Capítulo II de la citada ley.
+                </p>
+                <p>
+                    La **finalidad** del tratamiento de sus datos es exclusivamente académica y de investigación, siendo utilizados como insumo para el desarrollo y validación de un proyecto de tesis de licenciatura.
+                </p>
+                <p>
+                    En ningún caso sus datos serán utilizados con fines de lucro, comerciales, ni serán transferidos a terceros no autorizados. Al continuar, usted otorga su **consentimiento** explícito para el tratamiento de sus datos bajo los términos aquí descritos.
+                </p>
+                <p class="font-medium text-gray-700">
+                    Ley Federal de Protección de Datos Personales en Posesión de los Particulares:
+                    <a href="https://www.diputados.gob.mx/LeyesBiblio/pdf/LFPDPPP.pdf" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-800 break-words">
+                        https://www.diputados.gob.mx/LeyesBiblio/pdf/LFPDPPP.pdf
+                    </a>
+                </p>
+            </div>
+            <div class="flex items-center space-x-3 pt-2">
+                <input type="checkbox" id="privacy-agree" class="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                <label for="privacy-agree" class="font-medium text-gray-700">He leído y estoy de acuerdo</label>
+            </div>
+            <button id="continue-btn" class="w-full py-2 px-4 bg-gray-400 text-white font-medium rounded-lg transition duration-150 cursor-not-allowed" disabled>
+                Continuar
+            </button>
+        </div>
+    </div>
+
+    <div class="max-w-2xl mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-2xl space-y-8">
+        
+        <div class="text-center">
+            <h1 class="text-3xl font-extrabold text-gray-900">
+                Sistema de recomendación de libros
+            </h1>
+            <h2 class="text-xl font-semibold text-indigo-600 mt-1">Formulario de Tipo de Lectores</h2>
+            <p class="text-sm text-gray-500 mt-4">
+                <span class="font-semibold">Presentan:</span><br>
+                Edwin Yahir Arteaga Gonzalez, Diego Alberto Hernández Barrera, Rubén Rodríguez Méndez
+            </p>
+        </div>
+
+        <div class="space-y-6 border-b pb-6 border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-800">1. Perfil de Lector</h2>
+            
+            <div class="space-y-2">
+                <label for="username" class="block text-gray-700 font-medium">Crea un nombre de usuario</label>
+                <input type="text" id="username" name="username" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150" placeholder="Ej: LectorGenial_24" maxlength="15">
+                <p class="text-xs text-gray-500" id="username-help">
+                    Máx 15 caracteres. Solo se permiten letras (a-z, A-Z), números (0-9) y espacios.
+                </p>
+                <p class="text-xs text-red-500 hidden" id="username-error">
+                    </p>
+            </div>
+            
+            <div class="space-y-2">
+                <label class="block text-gray-700 font-medium">Edad</label>
+                <p class="text-xs text-gray-500">Con base en los rangos de edad del INEGI (2024) para estadísticas de población lectora. </p>
+                <div class="radio-group flex flex-wrap gap-2">
+                    <input type="radio" id="edad-1" name="edad" value="1"><label for="edad-1">6 a 11 años</label>
+                    <input type="radio" id="edad-2" name="edad" value="2"><label for="edad-2">12 a 18 años</label>
+                    <input type="radio" id="edad-3" name="edad" value="3"><label for="edad-3">18 a 24 años</label>
+                    <input type="radio" id="edad-4" name="edad" value="4"><label for="edad-4">25 a 34 años</label>
+                    <input type="radio" id="edad-5" name="edad" value="5"><label for="edad-5">35 a 44 años</label>
+                    <input type="radio" id="edad-6" name="edad" value="11"><label for="edad-6">45 a 54 años</label>
+                    <input type="radio" id="edad-7" name="edad" value="6"><label for="edad-7">55 a 64 años</label>
+                    <input type="radio" id="edad-8" name="edad" value="7"><label for="edad-8">Más de 64 años</label>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-gray-700 font-medium">Género</label>
+                <div class="radio-group flex flex-wrap gap-2">
+                    <input type="radio" id="genero-1" name="genero" value="1"><label for="genero-1">Hombre</label>
+                    <input type="radio" id="genero-2" name="genero" value="2"><label for="genero-2">Mujer</label>
+                    <input type="radio" id="genero-3" name="genero" value="3"><label for="genero-3">Prefiero no decirlo</label>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-gray-700 font-medium">¿Te consideras lector/a actualmente?</label>
+                <p class="text-xs text-gray-500">Tomando como base que el promedio de libros leídos por cada mexicano al año (3.2 libros), según el INEGI en el Módulo sobre Lectura (MOLEC) 2024.</p>
+		<p class="text-xs text-gray-500">https://www.inegi.org.mx/contenidos/saladeprensa/boletines/2024/molec/molec2024.pdf</p>
+                <div class="radio-group flex flex-wrap gap-2">
+                    <input type="radio" id="lector-si" name="es_lector" value="1"><label for="lector-si">Sí</label>
+                    <input type="radio" id="lector-no" name="es_lector" value="2"><label for="lector-no">No</label>
+                    <input type="radio" id="lector-oc" name="es_lector" value="3"><label for="lector-oc">Ocasionalmente</label>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-gray-700 font-medium">Tamaño de libro preferido</label>
+                <div class="radio-group flex flex-wrap gap-2">
+                    <input type="radio" id="tamano-1" name="tamano_libro" value="1"><label for="tamano-1">Pequeño (menos de 150 páginas)</label>
+                    <input type="radio" id="tamano-2" name="tamano_libro" value="2"><label for="tamano-2">Mediano (150-350 páginas)</label>
+                    <input type="radio" id="tamano-3" name="tamano_libro" value="3"><label for="tamano-3">Largo (más de 350 páginas)</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-4 pt-6">
+            <h2 class="text-xl font-semibold text-gray-800">2. Nombres de libros que te hayan gustado</h2>
+            <p class="text-gray-500">
+                Selecciona entre 3 y 5 libros que ya hayas leído o que te gustaría leer. El campo de búsqueda te mostrará los resultados mientras escribes. Deberás seleccionar un minímo de 3 libros para poder enviar tus respuestas.(<span id="book-count" class="font-semibold text-indigo-600">0</span> registros cargados).
+            </p>
+            
+            <div id="loading-alert" class="bg-indigo-100 border-l-4 border-indigo-500 text-indigo-700 p-4 rounded-lg flex" role="alert">
+                <p class="font-bold">Cargando...</p>
+                <p class="ml-2">Conectando con la base de datos de libros.</p>
+            </div>
+
+            <label for="book-selector" class="block text-lg font-medium text-gray-700">
+                Libros Leídos:
+            </label>
+            <select id="book-selector" multiple class="w-full"></select>
+
+            <div id="message-container" class="message-box opacity-0"></div>
+
+            <button id="enviar-btn" 
+                    class="w-full py-3 px-4 border border-transparent rounded-lg shadow-lg text-lg font-medium text-white bg-gray-400 hover:bg-gray-500 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50"
+                    disabled>
+                Enviar Respuestas
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <script>
+        // CONFIGURACIÓN
+        // IMPORTANTE: Reemplaza esta URL con la URL de tu Google Apps Script implementado
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrOCS3NWbjyoCVoQ8Uwylyeje-AS__qhoHmQeOXkddMyGIOCZ1ly9YJkkPw9x2UK8/exec"; // Reemplazar con tu URL
+        const MIN_SELECTIONS = 3;
+        const MAX_SELECTIONS = 5;
+        const PRIVACY_KEY = 'privacy_accepted';
+        const MIN_SEARCH_CHARS = 4; // Mínimo de caracteres para buscar
+
+        // Elementos del DOM
+        const selectElement = document.getElementById('book-selector');
+        const enviarBtn = document.getElementById('enviar-btn');
+        const messageContainer = document.getElementById('message-container');
+        const loadingAlert = document.getElementById('loading-alert');
+        const bookCountSpan = document.getElementById('book-count');
+        
+        // --- Nuevos Elementos del DOM ---
+        const privacyModal = document.getElementById('privacy-modal');
+        const privacyAgreeCheckbox = document.getElementById('privacy-agree');
+        const continueBtn = document.getElementById('continue-btn');
+        const usernameInput = document.getElementById('username');
+        const usernameError = document.getElementById('username-error');
+        
+        let choices;
+        let debounceTimer;
+        
+        // Expresión regular para validar el nombre de usuario
+        const USERNAME_REGEX = /^[a-zA-Z0-9 ]+$/;
+
+        // Inicialización de Choices.js
+        choices = new Choices(selectElement, {
+            removeItemButton: true,
+            searchEnabled: true,
+            searchPlaceholderValue: "Escribe para buscar...",
+            searchResultLimit: 10,
+            shouldSort: false,
+            maxItemCount: MAX_SELECTIONS,
+            loadingText: "Cargando datos...",
+            noResultsText: "No se encontraron resultados para la búsqueda.",
+            noChoicesText: `Escribe al menos ${MIN_SEARCH_CHARS} letras para buscar.`
+        });
+
+        // --- Funciones del Aviso de Privacidad ---
+        privacyAgreeCheckbox.addEventListener('change', () => {
+            if (privacyAgreeCheckbox.checked) {
+                continueBtn.disabled = false;
+                continueBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                continueBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+            } else {
+                continueBtn.disabled = true;
+                continueBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+                continueBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+            }
+        });
+
+        continueBtn.addEventListener('click', () => {
+            sessionStorage.setItem(PRIVACY_KEY, 'true');
+            privacyModal.style.display = 'none';
+        });
+
+        // --- Función de Validación de Usuario ---
+        function validateUsername() {
+            const username = usernameInput.value;
+            
+            if (username.length === 0) {
+                usernameError.textContent = "El nombre de usuario no puede estar vacío.";
+                usernameError.classList.remove('hidden');
+                usernameInput.classList.add('input-invalid');
+                usernameInput.classList.remove('input-valid');
+                return false;
+            }
+            if (username.length > 15) {
+                usernameError.textContent = "El nombre no debe superar los 15 caracteres.";
+                usernameError.classList.remove('hidden');
+                usernameInput.classList.add('input-invalid');
+                usernameInput.classList.remove('input-valid');
+                return false;
+            }
+            if (!USERNAME_REGEX.test(username)) {
+                usernameError.textContent = "Solo se permiten letras, números y espacios.";
+                usernameError.classList.remove('hidden');
+                usernameInput.classList.add('input-invalid');
+                usernameInput.classList.remove('input-valid');
+                return false;
+            }
+            
+            // Si es válido
+            usernameError.classList.add('hidden');
+            usernameInput.classList.remove('input-invalid');
+            usernameInput.classList.add('input-valid');
+            return true;
+        }
+
+        // --- Funciones de Mensajes y Carga ---
+        function showMessage(text, type) {
+            let bgColor, borderColor, textColor;
+            if (type === 'success') {
+                bgColor = 'bg-green-100'; borderColor = 'border-green-500'; textColor = 'text-green-700';
+            } else if (type === 'error') {
+                bgColor = 'bg-red-100'; borderColor = 'border-red-500'; textColor = 'text-red-700';
+            } else if (type === 'info') {
+                bgColor = 'bg-blue-100'; borderColor = 'border-blue-500'; textColor = 'text-blue-700';
+            } else {
+                bgColor = 'bg-blue-100'; borderColor = 'border-blue-500'; textColor = 'text-blue-700';
+            }
+
+            // Asegura que el contenedor esté visible y limpio antes de mostrar el nuevo mensaje
+            messageContainer.className = `message-box opacity-100 p-4 rounded-lg border-l-4 font-medium ${bgColor} ${borderColor} ${textColor}`;
+            messageContainer.innerHTML = `<p>${text}</p>`;
+
+            // Oculta el mensaje después de 5 segundos
+            setTimeout(() => {
+                messageContainer.classList.add('opacity-0');
+                setTimeout(() => messageContainer.innerHTML = '', 300); 
+            }, 5000);
+        }
+
+        // --- Lógica de Carga ---
+        async function loadBookCount() {
+            try {
+                loadingAlert.classList.remove('hidden'); 
+                enviarBtn.disabled = true;
+
+                const response = await fetch(GOOGLE_SCRIPT_URL);
+                if (!response.ok) throw new Error(`Error HTTP: ${response.status}.`);
+
+                const data = await response.json();
+                if (data.error) throw new Error(`Error del Script: ${data.error}`);
+                
+                bookCountSpan.textContent = data.bookCount;
+                choices.setChoices([{ value: '', label: `Escribe al menos ${MIN_SEARCH_CHARS} letras para buscar...`, disabled: true }], 'value', 'label', true);
+                
+                loadingAlert.classList.add('hidden');
+                enviarBtn.disabled = false;
+                enviarBtn.classList.remove('bg-gray-400', 'hover:bg-gray-500', 'focus:ring-gray-500');
+                enviarBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700', 'focus:ring-indigo-500');
+                enviarBtn.textContent = "Enviar Respuestas";
+
+            } catch (error) {
+                console.error("Error al cargar contador de libros:", error);
+                choices.setChoices([{ value: '', label: 'ERROR AL CARGAR DATOS', disabled: true }], 'value', 'label', true);
+                showMessage(`Error crítico al cargar datos: ${error.message}`, 'error');
+                loadingAlert.classList.add('hidden');
+                enviarBtn.disabled = true;
+                enviarBtn.textContent = "Error de Carga";
+            }
+        }
+        
+        // --- Lógica de Búsqueda Remota ---
+        async function searchBooksAPI(query) {
+             // VALIDACIÓN ACTUALIZADA
+            if (query.length < MIN_SEARCH_CHARS) {
+                choices.setChoices([{ value: '', label: `Escribe al menos ${MIN_SEARCH_CHARS} letras para buscar.`, disabled: true }], 'value', 'label', true);
+                return;
+            }
+
+            choices.setChoices([{ value: '', label: 'Buscando en servidor...', disabled: true }], 'value', 'label', true);
+
+            try {
+                const searchUrl = `${GOOGLE_SCRIPT_URL}?q=${encodeURIComponent(query)}`;
+                const response = await fetch(searchUrl);
+                if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+
+                const data = await response.json();
+                
+                // Manejo de error de Apps Script (ej: Error de servidor)
+                if (data.error) throw new Error(data.error); 
+                
+                if (data.length === 0) {
+                    choices.setChoices([{ value: '', label: `No hay resultados para: "${query}"`, disabled: true }], 'value', 'label', true);
+                    return;
+                }
+
+                const choicesOptions = data.map(title => ({ value: title, label: title }));
+                choices.setChoices(choicesOptions, 'value', 'label', false); 
+
+            } catch (error) {
+                console.error("Error en la búsqueda remota:", error);
+                // Muestra un error más amigable para el usuario final
+                const displayError = error.message.includes("Error de servidor") 
+                                 ? "Error de búsqueda en la base de datos." 
+                                 : `Error de búsqueda: ${error.message}`;
+                choices.setChoices([{ value: '', label: displayError, disabled: true }], 'value', 'label', true);
+            }
+        }
+
+        // Debounce Handler
+        function handleSearch(event) {
+            clearTimeout(debounceTimer);
+            const query = event.detail.value;
+
+            if (!query) return; 
+            
+            // DETIENE LA BÚSQUEDA SI ES MENOR AL MÍNIMO
+            if (query.length < MIN_SEARCH_CHARS) {
+                 choices.setChoices([{ value: '', label: `Escribe al menos ${MIN_SEARCH_CHARS} letras para buscar.`, disabled: true }], 'value', 'label', true);
+                 return;
+            }
+            
+            debounceTimer = setTimeout(() => {
+                searchBooksAPI(query);
+            }, 300);
+        }
+
+        // --- Función de Envío de Respuestas (IMPLEMENTACIÓN FINAL con NO-CORS) ---
+        async function handleSubmit(event) {
+            const isUsernameValid = validateUsername();
+            const data = {};
+            data.username = usernameInput.value;
+            data.edad = document.querySelector('input[name="edad"]:checked')?.value;
+            data.genero = document.querySelector('input[name="genero"]:checked')?.value;
+            data.es_lector = document.querySelector('input[name="es_lector"]:checked')?.value;
+            data.tamano_libro = document.querySelector('input[name="tamano_libro"]:checked')?.value;
+
+            const selectedBooks = choices.getValue(true);
+            data.libros_seleccionados = selectedBooks;
+
+            // Validación General
+            if (!isUsernameValid) {
+                showMessage('Por favor, corrige el nombre de usuario.', 'error');
+                usernameInput.focus();
+                return;
+            }
+            if (!data.edad || !data.genero || !data.es_lector || !data.tamano_libro) {
+                showMessage('Por favor, responde todas las preguntas del perfil.', 'error');
+                return;
+            }
+            if (selectedBooks.length < MIN_SELECTIONS || selectedBooks.length > MAX_SELECTIONS) {
+                showMessage(`Debes seleccionar entre ${MIN_SELECTIONS} y ${MAX_SELECTIONS} libros.`, 'error');
+                return;
+            }
+            
+            const payload = JSON.stringify(data);
+
+            enviarBtn.disabled = true;
+            enviarBtn.textContent = "Enviando...";
+            
+            try {
+                // CAMBIO CRÍTICO: USO DE mode: 'no-cors' para evitar "Failed to fetch"
+                const response = await fetch(GOOGLE_SCRIPT_URL, { 
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: payload,
+                    mode: 'no-cors' 
+                });
+
+                if (!response) {
+                    // Solo ocurre si hay un error de red antes de que se inicie el modo no-cors
+                    throw new Error("Respuesta de red vacía."); 
+                }
+
+                // En modo 'no-cors', no podemos leer la respuesta JSON, asumimos que el envío de red fue exitoso.
+                
+                // Muestra un mensaje intermedio mientras se asume el éxito de la petición no-cors
+                showMessage(`¡Gracias! Tus respuestas han sido enviadas. Verificando...`, 'info'); 
+                
+                // Forzamos el éxito y limpieza del formulario
+                document.querySelectorAll('input[type="radio"]').forEach(radio => radio.checked = false);
+                usernameInput.value = "";
+                usernameInput.classList.remove('input-valid', 'input-invalid');
+                choices.clearStore();
+                choices.clearInput();
+                
+                enviarBtn.disabled = false;
+                enviarBtn.textContent = "Enviar Respuestas";
+
+                // Retrasamos el mensaje de éxito final para que el usuario sepa que la acción se completó
+                setTimeout(() => {
+                    showMessage(`¡Envío completado! Si los datos no aparecen, revisa el registro de errores del Apps Script.`, 'success');
+                }, 1000);
+
+
+            } catch (error) {
+                console.error("Error al enviar datos (POST):", error);
+                // Si hay un Failed to fetch aquí, es un problema de red irresoluble o la URL está mal.
+                showMessage(`Hubo un error crítico al enviar los datos. ${error.message}`, 'error');
+                enviarBtn.disabled = false;
+                enviarBtn.textContent = "Enviar Respuestas";
+            }
+        }
+
+        // --- Event Listeners ---
+        enviarBtn.addEventListener('click', handleSubmit);
+        usernameInput.addEventListener('input', validateUsername);
+        selectElement.addEventListener('search', handleSearch);
+
+        window.onload = () => {
+            if (sessionStorage.getItem(PRIVACY_KEY) !== 'true') {
+                privacyModal.style.display = 'flex';
+            }
+            loadBookCount();
+        };
+
+    </script>
+</body>
+</html>
