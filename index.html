@@ -7,16 +7,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" rel="stylesheet" />
     <style>
-        /* Estilos generales */
         body { font-family: 'Inter', sans-serif; }
         
-        /* Estilos de Choices.js */
         .choices__inner { min-height: 50px; border-radius: 0.5rem; border-color: #d1d5db; background-color: white; }
         .choices__list--dropdown .choices__item--selectable::after { content: "+\20"; font-size: 1.5rem; line-height: 1; margin-right: 0.5rem; color: #4f46e5; }
         .choices__button { border-left: 1px solid #e5e7eb; padding-left: 0.5rem; margin-left: 0.5rem; }
         .message-box { transition: opacity 0.3s ease-in-out; }
 
-        /* Estilos para Radio Buttons personalizados */
         .radio-group input[type="radio"] { display: none; }
         .radio-group label {
             display: inline-block;
@@ -39,7 +36,6 @@
             border-color: #a5b4fc;
         }
 
-        /* Estilos para validación de input */
         .input-valid {
             border-color: #22c55e;
             box-shadow: 0 0 0 2px #bbf7d0;
@@ -58,16 +54,16 @@
             <h3 class="text-2xl font-bold text-gray-900">AVISO DE PRIVACIDAD</h3>
             <div class="text-sm text-gray-600 space-y-3">
                 <p>
-                    De conformidad con lo establecido en la **Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP)**, le informamos que los datos personales recabados a través de este formulario serán tratados con estricta confidencialidad.
+                    De conformidad con lo establecido en la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP), le informamos que los datos personales recabados a través de este formulario serán tratados con estricta confidencialidad.
                 </p>
                 <p>
-                    El tratamiento de sus datos personales se fundamenta en los principios de **Licitud, Consentimiento, Información, Calidad, Finalidad, Lealtad, Proporcionalidad y Responsabilidad**, consagrados en el Artículo dos del Capítulo I y el Artículo 5 del Capítulo II de la citada ley.
+                    El tratamiento de sus datos personales se fundamenta en los principios de Licitud, Consentimiento, Información, Calidad, Finalidad, Lealtad, Proporcionalidad y Responsabilidad, consagrados en el Artículo dos del Capítulo I y el Artículo 5 del Capítulo II de la citada ley.
                 </p>
                 <p>
-                    La **finalidad** del tratamiento de sus datos es exclusivamente académica y de investigación, siendo utilizados como insumo para el desarrollo y validación de un proyecto de tesis de licenciatura.
+                    La finalidad del tratamiento de sus datos es exclusivamente académica y de investigación, siendo utilizados como insumo para el desarrollo y validación de un proyecto de tesis de licenciatura.
                 </p>
                 <p>
-                    En ningún caso sus datos serán utilizados con fines de lucro, comerciales, ni serán transferidos a terceros no autorizados. Al continuar, usted otorga su **consentimiento** explícito para el tratamiento de sus datos bajo los términos aquí descritos.
+                    En ningún caso sus datos serán utilizados con fines de lucro, comerciales, ni serán transferidos a terceros no autorizados. Al continuar, usted otorga su consentimiento explícito para el tratamiento de sus datos bajo los términos aquí descritos.
                 </p>
                 <p class="font-medium text-gray-700">
                     Ley Federal de Protección de Datos Personales en Posesión de los Particulares:
@@ -185,22 +181,18 @@
 
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <script>
-        // CONFIGURACIÓN
-        // IMPORTANTE: Reemplaza esta URL con la URL de tu Google Apps Script implementado
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrOCS3NWbjyoCVoQ8Uwylyeje-AS__qhoHmQeOXkddMyGIOCZ1ly9YJkkPw9x2UK8/exec"; // Reemplazar con tu URL
         const MIN_SELECTIONS = 3;
         const MAX_SELECTIONS = 5;
         const PRIVACY_KEY = 'privacy_accepted';
-        const MIN_SEARCH_CHARS = 4; // Mínimo de caracteres para buscar
+        const MIN_SEARCH_CHARS = 4; 
 
-        // Elementos del DOM
         const selectElement = document.getElementById('book-selector');
         const enviarBtn = document.getElementById('enviar-btn');
         const messageContainer = document.getElementById('message-container');
         const loadingAlert = document.getElementById('loading-alert');
         const bookCountSpan = document.getElementById('book-count');
         
-        // --- Nuevos Elementos del DOM ---
         const privacyModal = document.getElementById('privacy-modal');
         const privacyAgreeCheckbox = document.getElementById('privacy-agree');
         const continueBtn = document.getElementById('continue-btn');
@@ -209,11 +201,8 @@
         
         let choices;
         let debounceTimer;
-        
-        // Expresión regular para validar el nombre de usuario
         const USERNAME_REGEX = /^[a-zA-Z0-9 ]+$/;
 
-        // Inicialización de Choices.js
         choices = new Choices(selectElement, {
             removeItemButton: true,
             searchEnabled: true,
@@ -226,7 +215,6 @@
             noChoicesText: `Escribe al menos ${MIN_SEARCH_CHARS} letras para buscar.`
         });
 
-        // --- Funciones del Aviso de Privacidad ---
         privacyAgreeCheckbox.addEventListener('change', () => {
             if (privacyAgreeCheckbox.checked) {
                 continueBtn.disabled = false;
@@ -244,7 +232,6 @@
             privacyModal.style.display = 'none';
         });
 
-        // --- Función de Validación de Usuario ---
         function validateUsername() {
             const username = usernameInput.value;
             
@@ -270,14 +257,12 @@
                 return false;
             }
             
-            // Si es válido
             usernameError.classList.add('hidden');
             usernameInput.classList.remove('input-invalid');
             usernameInput.classList.add('input-valid');
             return true;
         }
 
-        // --- Funciones de Mensajes y Carga ---
         function showMessage(text, type) {
             let bgColor, borderColor, textColor;
             if (type === 'success') {
@@ -290,18 +275,15 @@
                 bgColor = 'bg-blue-100'; borderColor = 'border-blue-500'; textColor = 'text-blue-700';
             }
 
-            // Asegura que el contenedor esté visible y limpio antes de mostrar el nuevo mensaje
             messageContainer.className = `message-box opacity-100 p-4 rounded-lg border-l-4 font-medium ${bgColor} ${borderColor} ${textColor}`;
             messageContainer.innerHTML = `<p>${text}</p>`;
 
-            // Oculta el mensaje después de 5 segundos
             setTimeout(() => {
                 messageContainer.classList.add('opacity-0');
                 setTimeout(() => messageContainer.innerHTML = '', 300); 
             }, 5000);
         }
 
-        // --- Lógica de Carga ---
         async function loadBookCount() {
             try {
                 loadingAlert.classList.remove('hidden'); 
@@ -332,9 +314,7 @@
             }
         }
         
-        // --- Lógica de Búsqueda Remota ---
         async function searchBooksAPI(query) {
-             // VALIDACIÓN ACTUALIZADA
             if (query.length < MIN_SEARCH_CHARS) {
                 choices.setChoices([{ value: '', label: `Escribe al menos ${MIN_SEARCH_CHARS} letras para buscar.`, disabled: true }], 'value', 'label', true);
                 return;
@@ -349,7 +329,6 @@
 
                 const data = await response.json();
                 
-                // Manejo de error de Apps Script (ej: Error de servidor)
                 if (data.error) throw new Error(data.error); 
                 
                 if (data.length === 0) {
@@ -362,7 +341,6 @@
 
             } catch (error) {
                 console.error("Error en la búsqueda remota:", error);
-                // Muestra un error más amigable para el usuario final
                 const displayError = error.message.includes("Error de servidor") 
                                  ? "Error de búsqueda en la base de datos." 
                                  : `Error de búsqueda: ${error.message}`;
@@ -370,14 +348,11 @@
             }
         }
 
-        // Debounce Handler
         function handleSearch(event) {
             clearTimeout(debounceTimer);
             const query = event.detail.value;
 
             if (!query) return; 
-            
-            // DETIENE LA BÚSQUEDA SI ES MENOR AL MÍNIMO
             if (query.length < MIN_SEARCH_CHARS) {
                  choices.setChoices([{ value: '', label: `Escribe al menos ${MIN_SEARCH_CHARS} letras para buscar.`, disabled: true }], 'value', 'label', true);
                  return;
@@ -388,7 +363,6 @@
             }, 300);
         }
 
-        // --- Función de Envío de Respuestas (IMPLEMENTACIÓN FINAL con NO-CORS) ---
         async function handleSubmit(event) {
             const isUsernameValid = validateUsername();
             const data = {};
@@ -401,7 +375,6 @@
             const selectedBooks = choices.getValue(true);
             data.libros_seleccionados = selectedBooks;
 
-            // Validación General
             if (!isUsernameValid) {
                 showMessage('Por favor, corrige el nombre de usuario.', 'error');
                 usernameInput.focus();
@@ -422,7 +395,6 @@
             enviarBtn.textContent = "Enviando...";
             
             try {
-                // CAMBIO CRÍTICO: USO DE mode: 'no-cors' para evitar "Failed to fetch"
                 const response = await fetch(GOOGLE_SCRIPT_URL, { 
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -431,16 +403,10 @@
                 });
 
                 if (!response) {
-                    // Solo ocurre si hay un error de red antes de que se inicie el modo no-cors
                     throw new Error("Respuesta de red vacía."); 
                 }
-
-                // En modo 'no-cors', no podemos leer la respuesta JSON, asumimos que el envío de red fue exitoso.
-                
-                // Muestra un mensaje intermedio mientras se asume el éxito de la petición no-cors
                 showMessage(`¡Gracias! Tus respuestas han sido enviadas. Verificando...`, 'info'); 
                 
-                // Forzamos el éxito y limpieza del formulario
                 document.querySelectorAll('input[type="radio"]').forEach(radio => radio.checked = false);
                 usernameInput.value = "";
                 usernameInput.classList.remove('input-valid', 'input-invalid');
@@ -450,7 +416,6 @@
                 enviarBtn.disabled = false;
                 enviarBtn.textContent = "Enviar Respuestas";
 
-                // Retrasamos el mensaje de éxito final para que el usuario sepa que la acción se completó
                 setTimeout(() => {
                     showMessage(`¡Envío completado! Si los datos no aparecen, revisa el registro de errores del Apps Script.`, 'success');
                 }, 1000);
@@ -458,14 +423,12 @@
 
             } catch (error) {
                 console.error("Error al enviar datos (POST):", error);
-                // Si hay un Failed to fetch aquí, es un problema de red irresoluble o la URL está mal.
                 showMessage(`Hubo un error crítico al enviar los datos. ${error.message}`, 'error');
                 enviarBtn.disabled = false;
                 enviarBtn.textContent = "Enviar Respuestas";
             }
         }
 
-        // --- Event Listeners ---
         enviarBtn.addEventListener('click', handleSubmit);
         usernameInput.addEventListener('input', validateUsername);
         selectElement.addEventListener('search', handleSearch);
@@ -479,4 +442,5 @@
 
     </script>
 </body>
+
 </html>
